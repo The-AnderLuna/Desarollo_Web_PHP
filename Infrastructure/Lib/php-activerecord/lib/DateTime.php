@@ -18,28 +18,28 @@ class DateTime extends \DateTime
 			$this->model->flag_dirty($this->attribute_name);
 	}
 
-	public function setDate($year, $month, $day)
+	public function setDate(int $year, int $month, int $day): \DateTime
 	{
 		$this->flag_dirty();
-		call_user_func_array(array($this,'parent::setDate'),func_get_args());
+		return parent::setDate($year, $month, $day);
 	}
 
-	public function setISODate($year, $week , $day=null)
+	public function setISODate(int $year, int $week, int $day = 1): \DateTime
 	{
 		$this->flag_dirty();
-		call_user_func_array(array($this,'parent::setISODate'),func_get_args());
+		return parent::setISODate($year, $week, $day);
 	}
 
-	public function setTime($hour, $minute, $second=null)
+	public function setTime(int $hour, int $minute, int $second = 0, int $microsecond = 0): \DateTime
 	{
 		$this->flag_dirty();
-		call_user_func_array(array($this,'parent::setTime'),func_get_args());
+		return parent::setTime($hour, $minute, $second, $microsecond);
 	}
 
-	public function setTimestamp($unixtimestamp)
+	public function setTimestamp(int $unixtimestamp): \DateTime
 	{
 		$this->flag_dirty();
-		call_user_func_array(array($this,'parent::setTimestamp'),func_get_args());
+		return parent::setTimestamp($unixtimestamp);
 	}
 }
 ?>

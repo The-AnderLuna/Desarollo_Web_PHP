@@ -118,19 +118,22 @@ function has_namespace($class_name)
 }
 
 /**
- * Returns true if all values in $haystack === $needle
- * @param $needle
- * @param $haystack
- * @return unknown_type
+ * Returns true if all values in $haystack are strictly equal to $needle
+ * 
+ * @param mixed $needle The value to compare against
+ * @param array $haystack The array to search through
+ * @return bool Returns true if all values are equal to $needle, false otherwise
  */
-function all($needle, array $haystack)
+
+function all($needle, array $haystack): bool
 {
-	foreach ($haystack as $value)
-	{
-		if ($value !== $needle)
-			return false;
-	}
-	return true;
+    foreach ($haystack as $value)
+    {
+        if ($value !== $needle) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function collect(&$enumerable, $name_or_closure)
@@ -152,30 +155,26 @@ function collect(&$enumerable, $name_or_closure)
  *
  * @package ActiveRecord
  */
-class Utils
-{
-	public static function extract_options($options)
-	{
-		return is_array(end($options)) ? end($options) : array();
-	}
+class Utils {
+    public static function extract_options($options) {
+        return is_array(end($options)) ? end($options) : array();
+    }
 
-	public static function add_condition(&$conditions=array(), $condition, $conjuction='AND')
-	{
-		if (is_array($condition))
-		{
-			if (empty($conditions))
-				$conditions = array_flatten($condition);
-			else
-			{
-				$conditions[0] .= " $conjuction " . array_shift($condition);
-				$conditions[] = array_flatten($condition);
-			}
-		}
-		elseif (is_string($condition))
-			$conditions[0] .= " $conjuction $condition";
+    // Corrigiendo el orden de los parámetros
+    public static function add_condition($condition, &$conditions = array(), $conjunction = 'AND') {
+        if (is_array($condition)) {
+            if (empty($conditions)) {
+                $conditions = array_flatten($condition);
+            } else {
+                $conditions[0] .= " $conjunction " . array_shift($condition);
+                $conditions[] = array_flatten($condition);
+            }
+        } elseif (is_string($condition)) {
+            $conditions[0] .= " $conjunction $condition";
+        }
+        return $conditions;
+    }
 
-		return $conditions;
-	}
 
 	public static function human_attribute($attr)
 	{

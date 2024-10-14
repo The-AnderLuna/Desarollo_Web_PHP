@@ -253,30 +253,33 @@ abstract class Connection
 	 * @param array &$values Optional array of bind values
 	 * @return mixed A result set object
 	 */
-	public function query($sql, &$values=array())
-	{
-		if ($this->logging)
+	public function query($sql, &$values=array()) {
+		if ($this->logging) {
 			$this->logger->log($sql);
-
+		}
 		$this->last_query = $sql;
-
+	
 		try {
-			if (!($sth = $this->connection->prepare($sql)))
+			if (!($sth = $this->connection->prepare($sql))) {
 				throw new DatabaseException($this);
+			}
 		} catch (PDOException $e) {
-			throw new DatabaseException($this);
+			throw new DatabaseException($this, $e->getMessage(), $e->getCode(), $e);
 		}
-
+	
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
-
+	
 		try {
-			if (!$sth->execute($values))
+			if (!$sth->execute($values)) {
 				throw new DatabaseException($this);
+			}
 		} catch (PDOException $e) {
-			throw new DatabaseException($sth);
+			throw new DatabaseException($sth, $e->getMessage(), $e->getCode(), $e);
 		}
+	
 		return $sth;
 	}
+	
 
 	/**
 	 * Execute a query that returns maximum of one row with one field and return it.

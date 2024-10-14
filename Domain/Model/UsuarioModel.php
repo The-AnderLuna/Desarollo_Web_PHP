@@ -11,24 +11,6 @@ class UsuarioModel {
     private $fecha_registro;
 
     public function __construct(string $password, string $nombre, string $apellidos, string $rol, string $email, string $telefono, string $estado, string $fecha_registro) {
-        if (empty(trim($email))) {
-            throw new InvalidArgumentException("El Email es requerido");
-        }
-
-        $resultado = $this->validarClave($password);
-        if (!$resultado["resultado"]) {
-            throw new InvalidArgumentException($resultado["mensaje"]);
-        }
-
-        if (empty(trim($nombre))) {
-            throw new InvalidArgumentException("El Nombre es requerido");
-        }
-
-        if (empty(trim($apellidos))) {
-            throw new InvalidArgumentException("Los Apellidos son requeridos");
-        }
-
-    
         $this->password = $password;
         $this->nombre = $nombre;
         $this->apellidos = $apellidos;
@@ -38,6 +20,30 @@ class UsuarioModel {
         $this->estado = $estado;
         $this->fecha_registro = $fecha_registro;
     }
+
+    public function validar(): array {
+        $errores = [];
+
+        if (empty(trim($this->email))) {
+            $errores[] = "El Email es requerido";
+        }
+
+        $resultado = $this->validarClave($this->password);
+        if (!$resultado["resultado"]) {
+            $errores[] = $resultado["mensaje"];
+        }
+
+        if (empty(trim($this->nombre))) {
+            $errores[] = "El Nombre es requerido";
+        }
+
+        if (empty(trim($this->apellidos))) {
+            $errores[] = "Los Apellidos son requeridos";
+        }
+
+        return $errores;
+    }
+
     private function validarClave(string $password): array {
         if (empty(trim($password))) {
             return ["resultado" => false, "mensaje" => "La clave es requerida"];

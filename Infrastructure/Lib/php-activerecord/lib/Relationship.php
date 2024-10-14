@@ -292,60 +292,49 @@ abstract class AbstractRelationship implements InterfaceRelationship
 	 * @param string $alias a table alias for when a table is being joined twice
 	 * @return string SQL INNER JOIN fragment
 	 */
-	public function construct_inner_join_sql(Table $from_table, $using_through=false, $alias=null)
-	{
-		if ($using_through)
-		{
+	public function construct_inner_join_sql(Table $from_table, $using_through = false, $alias = null) {
+		if ($using_through) {
 			$join_table = $from_table;
 			$join_table_name = $from_table->get_fully_qualified_table_name();
 			$from_table_name = Table::load($this->class_name)->get_fully_qualified_table_name();
- 		}
-		else
-		{
+		} else {
 			$join_table = Table::load($this->class_name);
 			$join_table_name = $join_table->get_fully_qualified_table_name();
 			$from_table_name = $from_table->get_fully_qualified_table_name();
 		}
-
-		// need to flip the logic when the key is on the other table
-		if ($this instanceof HasMany || $this instanceof HasOne)
-		{
+	
+		// Need to flip the logic when the key is on the other table
+		if ($this instanceof HasMany || $this instanceof HasOne) {
 			$this->set_keys($from_table->class->getName());
-
-			if ($using_through)
-			{
+			if ($using_through) {
 				$foreign_key = $this->primary_key[0];
 				$join_primary_key = $this->foreign_key[0];
-			}
-			else
-			{
+			} else {
 				$join_primary_key = $this->foreign_key[0];
 				$foreign_key = $this->primary_key[0];
 			}
-		}
-		else
-		{
+		} else {
 			$foreign_key = $this->foreign_key[0];
 			$join_primary_key = $this->primary_key[0];
 		}
-
-		if (!is_null($alias))
-		{
+	
+		if (!is_null($alias)) {
 			$aliased_join_table_name = $alias = $this->get_table()->conn->quote_name($alias);
 			$alias .= ' ';
-		}
-		else
+		} else {
 			$aliased_join_table_name = $join_table_name;
-
+		}
+	
 		return "INNER JOIN $join_table_name {$alias}ON($from_table_name.$foreign_key = $aliased_join_table_name.$join_primary_key)";
 	}
-
+	
 	/**
 	 * This will load the related model data.
 	 *
 	 * @param Model $model The model this relationship belongs to
 	 */
-	abstract function load(Model $model);
+	abstract public function load(Model $model);
+	
 };
 
 /**
@@ -390,136 +379,122 @@ abstract class AbstractRelationship implements InterfaceRelationship
  * @see http://www.phpactiverecord.org/guides/associations
  * @see valid_association_options
  */
-class HasMany extends AbstractRelationship
-{
-	/**
-	 * Valid options to use for a {@link HasMany} relationship.
-	 *
-	 * <ul>
-	 * <li><b>limit/offset:</b> limit the number of records</li>
+class HasMany extends AbstractRelationship {
+    /**
+     * Valid options to use for a {@link HasMany} relationship.
+     *
+     * <ul>
+     * <li><b>limit/offset:</b> limit the number of records</li>
      * <li><b>primary_key:</b> name of the primary_key of the association (defaults to "id")</li>
      * <li><b>group:</b> GROUP BY clause</li>
      * <li><b>order:</b> ORDER BY clause</li>
      * <li><b>through:</b> name of a model</li>
      * </ul>
-	 *
-	 * @var array
-	 */
-	static protected $valid_association_options = array('primary_key', 'order', 'group', 'having', 'limit', 'offset', 'through', 'source');
+     *
+     * @var array
+     */
+    static protected $valid_association_options = array('primary_key', 'order', 'group', 'having', 'limit', 'offset', 'through', 'source');
+    protected $primary_key;
+    private $has_one = false;
+    private $through;
 
-	protected $primary_key;
+    /**
+     * Constructs a {@link HasMany} relationship.
+     *
+     * @param array $options Options for the association
+     * @return HasMany
+     */
+    public function __construct($options = array()) {
+        parent::__construct($options);
+        if (isset($this->options['through'])) {
+            $this->through = $this->options['through'];
+            if (isset($this->options['source'])) {
+                $this->set_class_name($this->options['source']);
+            }
+        }
+        if (!$this->primary_key && isset($this->options['primary_key'])) {
+            $this->primary_key = is_array($this->options['primary_key']) ? $this->options['primary_key'] : array($this->options['primary_key']);
+        }
+        if (!$this->class_name) {
+            $this->set_inferred_class_name();
+        }
+    }
 
-	private $has_one = false;
-	private $through;
+    protected function set_keys($model_class_name, $override = false) {
+        // Infer from class_name
+        if (!$this->foreign_key || $override) {
+            $this->foreign_key = array($this->keyify($model_class_name));
+        }
+        if (!$this->primary_key || $override) {
+            $this->primary_key = Table::load($model_class_name)->pk;
+        }
+    }
 
-	/**
-	 * Constructs a {@link HasMany} relationship.
-	 *
-	 * @param array $options Options for the association
-	 * @return HasMany
-	 */
-	public function __construct($options=array())
-	{
-		parent::__construct($options);
+    public function load(Model $model) {
+        $class_name = $this->class_name;
+        $this->set_keys(get_class($model));
 
-		if (isset($this->options['through']))
-		{
-			$this->through = $this->options['through'];
+        // Since through relationships depend on other relationships we can't do
+        // this initialization in the constructor since the other relationship
+        // may not have been created yet and we only want this to run once
+        if (!isset($this->initialized)) {
+            if ($this->through) {
+                // Verify through is a belongs_to or has_many for access of keys
+                if (!($through_relationship = $this->get_table()->get_relationship($this->through))) {
+                    throw new HasManyThroughAssociationException("Could not find the association $this->through in model " . get_class($model));
+                }
+                if (!($through_relationship instanceof HasMany) && !($through_relationship instanceof BelongsTo)) {
+                    throw new HasManyThroughAssociationException('has_many through can only use a belongs_to or has_many association');
+                }
 
-			if (isset($this->options['source']))
-				$this->set_class_name($this->options['source']);
-		}
+                // Save old keys as we will be resetting them below for inner join convenience
+                $pk = $this->primary_key;
+                $fk = $this->foreign_key;
+                $this->set_keys($this->get_table()->class->getName(), true);
+                $through_table = Table::load(classify($this->through, true));
+                $this->options['joins'] = $this->construct_inner_join_sql($through_table, true);
 
-		if (!$this->primary_key && isset($this->options['primary_key']))
-			$this->primary_key = is_array($this->options['primary_key']) ? $this->options['primary_key'] : array($this->options['primary_key']);
+                // Reset keys
+                $this->primary_key = $pk;
+                $this->foreign_key = $fk;
+            }
+            $this->initialized = true;
+        }
 
-		if (!$this->class_name)
-			$this->set_inferred_class_name();
-	}
+        if (!($conditions = $this->create_conditions_from_keys($model, $this->foreign_key, $this->primary_key))) {
+            return null;
+        }
 
-	protected function set_keys($model_class_name, $override=false)
-	{
-		//infer from class_name
-		if (!$this->foreign_key || $override)
-			$this->foreign_key = array($this->keyify($model_class_name));
+        $options = $this->unset_non_finder_options($this->options);
+        $options['conditions'] = $conditions;
+        return $class_name::find($this->poly_relationship ? 'all' : 'first', $options);
+    }
 
-		if (!$this->primary_key || $override)
-			$this->primary_key = Table::load($model_class_name)->pk;
-	}
+    private function inject_foreign_key_for_new_association(Model $model, &$attributes) {
+        $this->set_keys($model);
+        $primary_key = Inflector::instance()->variablize($this->foreign_key[0]);
+        if (!isset($attributes[$primary_key])) {
+            $attributes[$primary_key] = $model->id;
+        }
+        return $attributes;
+    }
 
-	public function load(Model $model)
-	{
-		$class_name = $this->class_name;
-		$this->set_keys(get_class($model));
+    public function build_association(Model $model, $attributes = array()) {
+        $attributes = $this->inject_foreign_key_for_new_association($model, $attributes);
+        return parent::build_association($model, $attributes);
+    }
 
-		// since through relationships depend on other relationships we can't do
-		// this initiailization in the constructor since the other relationship
-		// may not have been created yet and we only want this to run once
-		if (!isset($this->initialized))
-		{
-			if ($this->through)
-			{
-				// verify through is a belongs_to or has_many for access of keys
-				if (!($through_relationship = $this->get_table()->get_relationship($this->through)))
-					throw new HasManyThroughAssociationException("Could not find the association $this->through in model " . get_class($model));
+    public function create_association(Model $model, $attributes = array()) {
+        $attributes = $this->inject_foreign_key_for_new_association($model, $attributes);
+        return parent::create_association($model, $attributes);
+    }
 
-				if (!($through_relationship instanceof HasMany) && !($through_relationship instanceof BelongsTo))
-					throw new HasManyThroughAssociationException('has_many through can only use a belongs_to or has_many association');
-
-				// save old keys as we will be reseting them below for inner join convenience
-				$pk = $this->primary_key;
-				$fk = $this->foreign_key;
-
-				$this->set_keys($this->get_table()->class->getName(), true);
-
-				$through_table = Table::load(classify($this->through, true));
-				$this->options['joins'] = $this->construct_inner_join_sql($through_table, true);
-
-				// reset keys
-				$this->primary_key = $pk;
-				$this->foreign_key = $fk;
-			}
-
-			$this->initialized = true;
-		}
-
-		if (!($conditions = $this->create_conditions_from_keys($model, $this->foreign_key, $this->primary_key)))
-			return null;
-
-		$options = $this->unset_non_finder_options($this->options);
-		$options['conditions'] = $conditions;
-		return $class_name::find($this->poly_relationship ? 'all' : 'first',$options);
-	}
-
-	private function inject_foreign_key_for_new_association(Model $model, &$attributes)
-	{
-		$this->set_keys($model);
-		$primary_key = Inflector::instance()->variablize($this->foreign_key[0]);
-
-		if (!isset($attributes[$primary_key]))
-			$attributes[$primary_key] = $model->id;
-
-		return $attributes;
-	}
-
-	public function build_association(Model $model, $attributes=array())
-	{
-		$attributes = $this->inject_foreign_key_for_new_association($model, $attributes);
-		return parent::build_association($model, $attributes);
-	}
-
-	public function create_association(Model $model, $attributes=array())
-	{
-		$attributes = $this->inject_foreign_key_for_new_association($model, $attributes);
-		return parent::create_association($model, $attributes);
-	}
-
-	public function load_eagerly($models=array(), $attributes=array(), $includes, Table $table)
-	{
+	public function load_eagerly(Table $table, $includes, $models = array(), $attributes = array()) {
 		$this->set_keys($table->class->name);
-		$this->query_and_attach_related_models_eagerly($table,$models,$attributes,$includes,$this->foreign_key, $table->pk);
+		$this->query_and_attach_related_models_eagerly($table, $models, $attributes, $includes, $this->foreign_key, $table->pk);
 	}
-};
+	
+}
 
 /**
  * One-to-one relationship.
@@ -539,9 +514,10 @@ class HasMany extends AbstractRelationship
  * @package ActiveRecord
  * @see http://www.phpactiverecord.org/guides/associations
  */
-class HasOne extends HasMany
-{
-};
+class HasOne extends HasMany {
+    // Implementación de la clase HasOne si es necesario
+}
+
 
 /**
  * @todo implement me
@@ -629,9 +605,10 @@ class BelongsTo extends AbstractRelationship
 		return $class::first($options);
 	}
 
-	public function load_eagerly($models=array(), $attributes, $includes, Table $table)
-	{
-		$this->query_and_attach_related_models_eagerly($table,$models,$attributes,$includes, $this->primary_key,$this->foreign_key);
+	public function load_eagerly(Table $table, $attributes, $includes, $models = array()) {
+		$this->query_and_attach_related_models_eagerly($table, $models, $attributes, $includes, $this->primary_key, $this->foreign_key);
 	}
+	
+	
 };
 ?>

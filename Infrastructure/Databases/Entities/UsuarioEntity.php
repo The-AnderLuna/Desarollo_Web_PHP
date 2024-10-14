@@ -9,14 +9,12 @@ class UsuarioEntity extends ActiveRecord\Model
     public static $primary_key = "id";
 
     //relaciones 
-    public static $has_many = [["Cursos"]];
+    //public static $has_many = [["Cursos"]];
 
 
-    // Método para mapear UsuarioEntity a UsuarioModel
-    public function mapperEntityToModel(): UsuarioModel
-    {
-        $usuarioModel = new UsuarioModel(
-            
+      // Método para mapear UsuarioEntity a UsuarioModel
+      public function mapperEntityToModel(): UsuarioModel {
+        return new UsuarioModel(
             $this->password,
             $this->nombre,
             $this->apellidos,
@@ -24,12 +22,11 @@ class UsuarioEntity extends ActiveRecord\Model
             $this->email,
             $this->telefono,
             $this->estado,
-            $this->fecha_registro
+            $this->fecha_registro->format('Y-m-d H:i:s') // Convertimos a cadena de texto
         );
-
-        return $usuarioModel;
     }
 
+    // Método para mapear UsuarioModel a UsuarioEntity
     public static function mapperModelToEntity(UsuarioModel $usuarioModel): UsuarioEntity
     {
         $usuarioEntity = new UsuarioEntity();
@@ -43,5 +40,9 @@ class UsuarioEntity extends ActiveRecord\Model
         $usuarioEntity->fecha_registro = $usuarioModel->getFechaRegistro();
         return $usuarioEntity;
     }
+    // Método de búsqueda por correo
+    public static function find_by_email($email)
+    {
+        return self::find('first', array('conditions' => array('email = ?', $email)));
+    }
 }
-    
