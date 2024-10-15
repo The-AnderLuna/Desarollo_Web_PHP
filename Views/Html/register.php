@@ -22,7 +22,6 @@
             <input type="text" id="apellidos" name="apellidos" required>
             <label for="rol">Rol:</label>
             <select id="rol" name="rol" required>
-                <option value="Admin">Admin</option>
                 <option value="Profesor">Profesor</option>
                 <option value="Estudiante">Estudiante</option>
             </select>

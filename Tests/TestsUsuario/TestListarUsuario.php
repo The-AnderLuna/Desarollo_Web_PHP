@@ -22,5 +22,5 @@ class TestUsuario
     }
 }
 
-// Ejecutar el test
+
 TestUsuario::TestUsuarioListar();

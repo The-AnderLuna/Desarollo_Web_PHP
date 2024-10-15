@@ -9,7 +9,8 @@ class UsuarioEntity extends ActiveRecord\Model
     public static $primary_key = "id";
 
     //relaciones 
-    //public static $has_many = [["Cursos"]];
+    public static $has_many = [["cursos", "class_name" => "CursoEntity", "foreign_key" => "usuario_id"]];
+
 
 
       // Método para mapear UsuarioEntity a UsuarioModel
