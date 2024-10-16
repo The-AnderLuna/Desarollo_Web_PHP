@@ -10,5 +10,5 @@ interface IUsuarioRepository
     public function editar(UsuarioModel $usuarioModel);
     public function listar(): array;
     public function editarPassword(string $email, string $password);
-
+    
 }

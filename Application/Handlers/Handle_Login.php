@@ -23,15 +23,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION['usuario_apellido'] = $usuarioModel->getApellidos();
 
    
-        header("Location: ../../views/html/Welcome.php");
+        header("Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/Welcome.php");
         exit();
     } catch (UsuarioNoAutenticadoException $e) {
       
-        header("Location: ../../views/html/login.php?error=incorrect_credentials");
+        header("Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/Login.php?error=incorrect_credentials");
         exit();
     } catch (Exception $e) {
       
-        header("Location: ../../views/html/login.php?error=unexpected_error");
+        header("Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/Login.php?error=unexpected_error");
         exit();
     }
 }

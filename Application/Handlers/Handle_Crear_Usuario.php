@@ -14,8 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Validar longitud de la contraseña
     if (strlen($password) < 12) {
-        // Redirigir a la página de registro con mensaje de error
-        header('Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/register.php?message=password_length');
+        // Redirigir a la página de creación de usuario con mensaje de error
+        header('Location: /Proyecto_Web_PHP_/Views/Html/UsuarioForms/crear_usuario.php?message=password_length');
         exit();
     }
 
@@ -47,15 +47,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $usuarioRepository = new UsuarioRepository();
         $guardarUsuarioService = new GuardarUsuarioService($usuarioRepository);
-
         // Guardar usuario
         $guardarUsuarioService->guardarUsuario($usuarioModel);
-        // Redirigir a la página de inicio de sesión con mensaje de éxito
-        header('Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/Login.php?message=success');
+
+        // Redirigir a la página de creación de usuario con mensaje de éxito
+        header('Location: /Proyecto_Web_PHP_/Views/Html/UsuarioForms/crear_usuario.php?message=Usuario+registrado+correctamente');
         exit();
     } catch (UsuarioEncontradoException $e) {
-        // Redirigir a la página de registro con mensaje de error
-        header('Location:  /Proyecto_Web_PHP_/Views/Html/LoginForms/register.php?message=exists');
+        // Redirigir a la página de creación de usuario con mensaje de error
+        header('Location: /Proyecto_Web_PHP_/Views/Html/UsuarioForms/crear_usuario.php?message=exists');
         exit();
     } catch (Exception $e) {
         echo $e->getMessage();

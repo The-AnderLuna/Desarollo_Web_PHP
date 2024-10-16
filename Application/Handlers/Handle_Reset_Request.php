@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $usuarioModel = $buscarUsuarioService->buscar($email);
 
         // Usuario encontrado, redirigir a la página de editar contraseña
-        header("Location: ../../views/html/Edit_Password.php?email=" . urlencode($email));
+        header("Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/Edit_Password.php?email=" . urlencode($email));
         exit();
     } catch (UsuarioNoEncontradoException $e) {
         // Usuario no encontrado, mostrar mensaje de error

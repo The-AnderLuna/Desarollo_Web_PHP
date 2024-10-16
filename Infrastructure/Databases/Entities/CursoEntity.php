@@ -2,13 +2,15 @@
 require_once $_SERVER["DOCUMENT_ROOT"] . "/Proyecto_Web_PHP_/Infrastructure/Lib/Config.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/Proyecto_Web_PHP_/Domain/Model/CursoModel.php";
 
-class CursoEntity extends ActiveRecord\Model {
-    public static $table_name = "cursos"; 
+class CursoEntity extends ActiveRecord\Model
+{
+    public static $table_name = "cursos";
     public static $primary_key = "id";
     public static $belongs_to = [["usuario", "class_name" => "UsuarioEntity", "foreign_key" => "usuario_id"]];
 
     // Método para mapear CursoEntity a CursoModel
-    public function mapperEntityToModel(): CursoModel {
+    public function mapperEntityToModel(): CursoModel
+    {
         return new CursoModel(
             $this->id,
             $this->nombre,
@@ -20,7 +22,8 @@ class CursoEntity extends ActiveRecord\Model {
     }
 
     // Método para mapear CursoModel a CursoEntity
-    public static function mapperModelToEntity(CursoModel $cursoModel): CursoEntity {
+    public static function mapperModelToEntity(CursoModel $cursoModel): CursoEntity
+    {
         $cursoEntity = new CursoEntity();
         $cursoEntity->nombre = $cursoModel->getNombre();
         $cursoEntity->duracion = $cursoModel->getDuracion();
@@ -28,5 +31,10 @@ class CursoEntity extends ActiveRecord\Model {
         $cursoEntity->fecha_inicio = $cursoModel->getFechaInicio();
         $cursoEntity->usuario_id = $cursoModel->getUsuarioId();
         return $cursoEntity;
+    }
+    // Método para buscar curso por ID
+    public static function find_by_id($id)
+    {
+        return self::find('first', array('conditions' => array('id = ?', $id)));
     }
 }

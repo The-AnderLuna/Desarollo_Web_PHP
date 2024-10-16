@@ -12,10 +12,10 @@ class TestUsuario
     {
         // Arrange
         $password = '123456789000';
-        $nombre = 'juana';
+        $nombre = 'juanaaaaaa';
         $apellidos = 'gomez';
         $rol = 'usuario';
-        $email = 'juana@example.com';
+        $email = 'juanaaaaa@example.com';
         $telefono = '3033456363';
         $estado = 'activo';
         $fechaRegistro = new \DateTime(); // Fecha actual

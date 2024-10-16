@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Registro</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="/Proyecto_Web_PHP_/Views/Css/styles.css">
 </head>
 <body>
     <div class="container">
@@ -15,7 +15,7 @@
             echo '<p class="error">La contraseña debe tener al menos 12 caracteres.</p>';
         }
         ?>
-        <form action="../../application/handlers/Handle_Register.php" method="post">
+        <form action="/Proyecto_Web_PHP_/Application/Handlers/Handle_Register.php" method="post">
             <label for="nombre">Nombre:</label>
             <input type="text" id="nombre" name="nombre" required>
             <label for="apellidos">Apellidos:</label>
@@ -33,7 +33,7 @@
             <input type="text" id="telefono" name="telefono" required>
             <button type="submit">Registrarse</button>
         </form>
-        <p>¿Ya tienes una cuenta? <a href="login.php">Inicia Sesión aquí</a></p>
+        <p>¿Ya tienes una cuenta? <a href="/Proyecto_Web_PHP_/Views/Html/LoginForms/Login.php">Inicia Sesión aquí</a></p>
     </div>
 </body>
 </html>

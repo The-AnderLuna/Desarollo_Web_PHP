@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="/Proyecto_Web_PHP_/Views/Css/styles.css">
 </head>
 
 <body>
@@ -28,15 +28,15 @@
             }
         }
         ?>
-        <form action="../../application/handlers/Handle_Login.php" method="post">
+        <form action="/Proyecto_Web_PHP_/Application/Handlers/Handle_Login.php" method="post">
             <label for="email">Correo Electrónico:</label>
             <input type="email" id="email" name="email" required>
             <label for="password">Contraseña:</label>
             <input type="password" id="password" name="password" required>
             <button type="submit">Iniciar Sesión</button>
         </form>
-        <p>¿No tienes una cuenta? <a href="register.php">Regístrate aquí</a></p>
-        <p><a href="Reset_Request.php">¿Olvidaste tu contraseña?</a></p>
+        <p>¿No tienes una cuenta? <a href="/Proyecto_Web_PHP_/Views/Html/LoginForms/register.php">Regístrate aquí</a></p>
+        <p><a href="/Proyecto_Web_PHP_/Views/Html/LoginForms/Reset_Request.php">¿Olvidaste tu contraseña?</a></p>
     </div>
 </body>
 

@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $editarPasswordService->editarPassword($email, $password);
 
 
-        header("Location: ../../views/html/login.php?message=password_updated");
+        header("Location: /Proyecto_Web_PHP_/Views/Html/LoginForms/Login.php?message=password_updated");
         exit();
     } catch (Exception $e) {
 
